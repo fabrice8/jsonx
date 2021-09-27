@@ -82,11 +82,11 @@ function isVariable( str: any ): LexicalCheckRespone {
     
   str = str.substr(1)
   for( let x in str )
-    if( str[x] == __OBJECT_COLON ){
+    if( str[x] == __OBJECT_COLON )
       return { _variable, rest: str.substr( _variable.length ) }
-    }
-
-    else if( str[x] == '.' )
+    
+    // Identify as assignment
+    else if( ['.', ','].includes( str[x] ) )
       return { rest: str }
 
     else _variable += str[x]
@@ -214,8 +214,7 @@ export default ( str: string ) => {
       // Hoist assigned line as metaset and replace it with meta-key
       ASSIGNED.push( extract._assigned )
       tokens.push(`--ASSIGNED[${ASSIGNED.length - 1}]--`)
-
-      console.log( extract.rest )
+      
       str = extract.rest
       continue
     }
