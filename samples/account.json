@@ -1,0 +1,9 @@
+{
+  "type": "INSTRUCTOR",
+  "roles": [ "ADMIN", "SUPER_ADMIN", "DEVELOPER" ],
+  "settings": {
+    "theme": "default",
+    "language": "en"
+  },
+  "isConnected": true
+}

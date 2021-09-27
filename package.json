@@ -1,0 +1,56 @@
+{
+  "name": "jsonx",
+  "version": "0.0.1",
+  "description": "Javascript Object Notation and More (JSONX)",
+  "files": [
+    "src",
+    "@types/index.d.ts"
+  ],
+  "types": "./@types/index.d.ts",
+  "engines": {
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "test": "ts-node ./test/index.ts",
+    "build": "tsc && yarn build:cp-source",
+    "build:cp-source": "cp ./src/** ./dist",
+    "type": "tsc --noEmit"
+  },
+  "keywords": [
+    "json",
+    "jsonx",
+    "jsontool",
+    "promise"
+  ],
+  "main": "src/index.js",
+  "homepage": "https://github.com/fabrice8/jsonx",
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/jsonx"
+  },
+  "repository": "https://github.com/fabrice8/jsonx",
+  "author": "Fabrice Marlboro",
+  "license": "BSC",
+  "private": false,
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/node": "^16.10.1",
+    "@types/request": "^2.48.7",
+    "@types/request-promise-native": "^1.0.18",
+    "ts-node": "^10.2.1",
+    "tsc": "^2.0.3",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.5",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.9"
+  },
+  "tsd": {
+    "cwd": "@types",
+    "compilerOptions": {
+      "esModuleInterop": true
+    }
+  }
+}
