@@ -1,5 +1,11 @@
 
-export default ( input: string ): string => {
+import fs from 'fs'
+
+export const fetchContent = async ( filePath: string ) => {
+  return await fs.readFileSync( filePath, 'utf-8' )
+}
+
+export const clean = ( input: string ): string => {
   
   const
   VALID_JSON = /^\{\s*(.+)\s*\}$/,
@@ -27,4 +33,8 @@ export default ( input: string ): string => {
               .replace(/\s*\}/g, '}')
               .replace(/\[\s+/g, '[')
               .replace(/\s*\]/g, ']')
+}
+
+export const getType = ( arg: any ) => {
+  return Array.isArray( arg ) ? 'array' : 'object'
 }
