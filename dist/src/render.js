@@ -39,19 +39,55 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var render_1 = __importDefault(require("./render"));
-exports.default = (function (filepath) { return __awaiter(void 0, void 0, void 0, function () {
-    var error_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+var path_1 = __importDefault(require("path"));
+var request_promise_native_1 = __importDefault(require("request-promise-native"));
+var lexer_1 = __importDefault(require("./lexer"));
+var parser_1 = __importDefault(require("./parser"));
+var compiler_1 = __importDefault(require("./compiler"));
+var utils_1 = require("./utils");
+var EXTERNAL_URL = /^https?:\/\/(.+)$/, Imports = {};
+exports.default = (function (source) { return __awaiter(void 0, void 0, void 0, function () {
+    var isExternal, input, _a, tokens, syntaxTree, _value, error_1;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                _a.trys.push([0, 2, , 3]);
-                return [4 /*yield*/, (0, render_1.default)(filepath)];
-            case 1: return [2 /*return*/, _a.sent()];
+                _b.trys.push([0, 8, , 9]);
+                isExternal = false, input = void 0;
+                if (!Imports.hasOwnProperty(source)) return [3 /*break*/, 1];
+                input = Imports[source];
+                return [3 /*break*/, 6];
+            case 1:
+                if (!EXTERNAL_URL.test(source)) return [3 /*break*/, 3];
+                return [4 /*yield*/, (0, request_promise_native_1.default)(source)];
             case 2:
-                error_1 = _a.sent();
+                input = _b.sent();
+                isExternal = true;
+                return [3 /*break*/, 5];
+            case 3:
+                // Add .jsonx by default to undefined directory file extension
+                if (!path_1.default.extname(source))
+                    source += '.jsonx';
+                return [4 /*yield*/, (0, utils_1.fetchContent)(source)];
+            case 4:
+                // Fetch data from project repository
+                input = _b.sent();
+                _b.label = 5;
+            case 5:
+                if (!input)
+                    return [2 /*return*/, null
+                        // Cache temporary the imported data
+                    ];
+                // Cache temporary the imported data
+                Imports[source] = input;
+                _b.label = 6;
+            case 6:
+                _a = (0, lexer_1.default)((0, utils_1.clean)(input)), tokens = _a.tokens, syntaxTree = _a.syntaxTree, _value = (0, parser_1.default)(tokens)._value;
+                return [4 /*yield*/, (0, compiler_1.default)(_value, syntaxTree, isExternal ? undefined : path_1.default.dirname(source))];
+            case 7: return [2 /*return*/, _b.sent()];
+            case 8:
+                error_1 = _b.sent();
                 throw new Error(error_1 || 'Unknown Error');
-            case 3: return [2 /*return*/];
+            case 9: return [2 /*return*/];
         }
     });
 }); });

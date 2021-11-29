@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getType = exports.clean = exports.fetchContent = void 0;
+exports.isEmpty = exports.getType = exports.clean = exports.fetchContent = void 0;
 var fs_1 = __importDefault(require("fs"));
 var fetchContent = function (filePath) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
@@ -51,7 +51,7 @@ var fetchContent = function (filePath) { return __awaiter(void 0, void 0, void 0
 }); };
 exports.fetchContent = fetchContent;
 var clean = function (input) {
-    var VALID_JSON = /^\{\s*(.+)\s*\}$/, REMOVE_BREAKLINES = /\r?\n\s+/g, REMOVE_SINGLELINE_COMMENT = /(\s+)?[^:]\/\/(.+)/g, REMOVE_MULTIPLELINE_COMMENT = /\/\*(.+)\*\//g;
+    var VALID_JSON = /^(\[|\{)\s*(.+)\s*(\}|\])$/, REMOVE_BREAKLINES = /\r?\n\s+/g, REMOVE_SINGLELINE_COMMENT = /(\s+)?[^:]\/\/(.+)/g, REMOVE_MULTIPLELINE_COMMENT = /\/\*(.+)\*\//g;
     // Remove single line comments
     input = input.replace(REMOVE_SINGLELINE_COMMENT, '');
     // console.log('\nNo Comment: ', input )
@@ -59,7 +59,7 @@ var clean = function (input) {
     input = input.replace(REMOVE_BREAKLINES, '');
     // console.log('\nNo BreakLine: ', input )
     // Remove multiple-lines comment
-    input = input.replace(REMOVE_MULTIPLELINE_COMMENT, '');
+    // input = input.replace( REMOVE_MULTIPLELINE_COMMENT, '' )
     // console.log('\nNo Multiple Lines Comment: ', input )
     if (!VALID_JSON.test(input))
         throw new Error('Invalid JSONX Format');
@@ -74,3 +74,10 @@ var getType = function (arg) {
     return Array.isArray(arg) ? 'array' : 'object';
 };
 exports.getType = getType;
+var isEmpty = function (entry) {
+    // test empty array or object
+    if (typeof entry !== 'object')
+        return null;
+    return Array.isArray(entry) ? !entry.length : Object.keys(entry).length === 0 && entry.constructor === Object;
+};
+exports.isEmpty = isEmpty;

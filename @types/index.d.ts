@@ -2,12 +2,14 @@
 export declare module 'node-fetch'
 
 export type LexicalCheckRespone = {
+  _comment?: string,
   _string?: string,
   _number?: number,
   _boolean?: boolean,
   _null?: null,
   _variable?: string,
   _import?: string,
+  _export?: string,
   _assigned?: string,
   _script?: string,
   rest: string
@@ -28,4 +30,4 @@ export type parseObject = {
 }
 
 export type JSONResponse = { [index: string]: any }
-export type SyntaxTree = { [ index:string ]: string[] }
+export type SyntaxTree = { [ index:string ]: string[] } 

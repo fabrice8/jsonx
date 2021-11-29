@@ -1,6 +1,8 @@
 
 import {
   __WHITE_SPACE,
+  __MULTILINE_COMMENT_CLOSER,
+  __MULTILINE_COMMENT_STAR,
   __QUOTE,
   __LEFT_BRACKET,
   __RIGHT_BRACKET,
@@ -11,10 +13,13 @@ import {
   __JSON_STRING,
   __JSON_SYNTAX,
   __JSONX_VARIABLE,
-  __JSONX_IMPORT,
+  __JSONX_IMPORT_EXPORT,
   __JSONX_IMPORT_SYNTAX,
-  __JSONX_IMPORT_PIPE,
+  __JSONX_IMPORT_FROM,
+  __JSONX_EXPORT_SYNTAX,
+  __JSONX_EXPORT_AS,
   __JSONX_ASSIGNED_START,
+  __JSONX_ASSIGNED_SPREAD,
   __JSONX_SCRIPT_GRAVE
 } from './lexic'
 import { LexicalCheckRespone } from '..'
@@ -23,9 +28,25 @@ const
 VARIABLES: string[] = [],
 ASSIGNED: string[] = [],
 IMPORTS: string[] = [],
+EXPORTS: string[] = [],
 SCRIPTS: string[] = []
 
-function isString( str: any ): LexicalCheckRespone {
+export function isMultiLineComment( str: any ): LexicalCheckRespone {
+  
+  let _comment = ''
+  if( str[0] != __MULTILINE_COMMENT_CLOSER && str[1] != __MULTILINE_COMMENT_STAR )
+    return { rest: str }
+
+  str = str.substr(2) // remove `/*` starter
+  for( let x in str )
+    if( +x > 0 && str[x] == __MULTILINE_COMMENT_CLOSER && str[ +x - 1 ] == __MULTILINE_COMMENT_STAR )
+      return { _comment, rest: str.substr( _comment.length + 1 ) }
+    else _comment += str[x]
+  
+  throw new Error('Expected End of Multiple Line Comment CLOSER: (*/)')
+}
+
+export function isString( str: any ): LexicalCheckRespone {
 
   let _string = ''
   if( str[0] != __QUOTE )
@@ -40,7 +61,7 @@ function isString( str: any ): LexicalCheckRespone {
   throw new Error('Expected End of String QUOTE: (")')
 }
 
-function isNumber( str: any ): LexicalCheckRespone {
+export function isNumber( str: any ): LexicalCheckRespone {
 
   let _number = ''
   for( let x in str ){
@@ -55,7 +76,7 @@ function isNumber( str: any ): LexicalCheckRespone {
   }
 }
 
-function isBoolean( str: any ): LexicalCheckRespone {
+export function isBoolean( str: any ): LexicalCheckRespone {
 
   if( str.length >= 4 && str.substring(0, 4) == 'true' )
     return { _boolean: true, rest: str.substr(4) }
@@ -66,7 +87,7 @@ function isBoolean( str: any ): LexicalCheckRespone {
   return { rest: str }
 }
 
-function isNull( str: any ): LexicalCheckRespone{
+export function isNull( str: any ): LexicalCheckRespone{
 
   if( str.length >= 4 && str.substring(0, 4) == 'null' )
     return { _null: null, rest: str.substr(4) }
@@ -74,7 +95,7 @@ function isNull( str: any ): LexicalCheckRespone{
   return { rest: str }
 }
 
-function isVariable( str: any ): LexicalCheckRespone {
+export function isVariable( str: any ): LexicalCheckRespone {
 
   let _variable: any = ''
   if( str[0] != __JSONX_VARIABLE )
@@ -94,55 +115,53 @@ function isVariable( str: any ): LexicalCheckRespone {
   return { rest: str }
 }
 
-function isImport( str: any ): LexicalCheckRespone {
+export function isImport( str: any ): LexicalCheckRespone {
 
   let _import: any = ''
-  if( str[0] != __JSONX_IMPORT )
+  if( str[0] != __JSONX_IMPORT_EXPORT || str[1] != 'i' )
     return { rest: str }
   
-  for( let x in str )
-    if( str[x] == __OBJECT_COMMA 
-        && !_import.includes( __JSONX_IMPORT_PIPE )
-        && !_import.includes( __LEFT_BRACE )
-        && !_import.includes( __LEFT_BRACKET ) )
-      return { _import, rest: str.substr( _import.length ) }
+  for( let x in str ){
+    if( str[x] == __OBJECT_COMMA || str[x] == __RIGHT_BRACE || str[x] == __RIGHT_BRACKET ){
 
-    // Assigned Object construction closure, added to the import URI
-    else if( str[x] == __RIGHT_BRACE && _import.includes( __LEFT_BRACE ) ){
-      // Seperator pipe (|) is required before declaring object {}
-      if( !_import.includes( __JSONX_IMPORT_PIPE ) )
-        throw new Error('Expected assign keys seperator PIPE (|)')
+      if( !_import.includes( __LEFT_BRACE ) && !_import.includes( __LEFT_BRACKET ) )
+        return { _import, rest: str.substr( _import.length ) }
 
-      _import += str[x]
-      return { _import, rest: str.substr( _import.length ) }
+      if( ( _import.includes( __LEFT_BRACE ) || _import.includes( __LEFT_BRACKET ) ) && _import.includes( __JSONX_IMPORT_FROM ) )
+        return { _import, rest: str.substr( _import.length ) }
+
+      else _import += str[x]
     }
-
-    // Assigned Array construction closure, added to the import URI
-    else if( str[x] == __RIGHT_BRACKET 
-              && _import.includes( __JSONX_IMPORT_PIPE )
-              && _import.includes( __LEFT_BRACKET ) ){
-      // Seperator pipe (|) is required before declaring array []
-      if( !_import.includes( __JSONX_IMPORT_PIPE ) )
-        throw new Error('Expected assign keys seperator PIPE (|)')
-
-      _import += str[x]
-      return { _import, rest: str.substr( _import.length ) }
-    }
-
     else _import += str[x]
+  }
   
   throw new Error('Expected End of Import URI to be: COMMA (,) or BRACKET CLOSURE (]) or BRACE CLOSURE (})')
 }
 
-function isAssigned( str: any ): LexicalCheckRespone {
+export function isExport( str: any ): LexicalCheckRespone {
+
+  let _export: any = ''
+  if( str[0] != __JSONX_IMPORT_EXPORT || str[1] != 'e' )
+    return { rest: str }
+  
+  for( let x in str )
+    if( str[x] == __OBJECT_COLON )
+      return { _export, rest: str.substr( _export.length ) }
+      
+    else _export += str[x]
+  
+  throw new Error('Expected End of Export Variable to be: COLON (:)')
+}
+
+export function isAssigned( str: any ): LexicalCheckRespone {
 
   let _assigned: any = ''
-  if( str[0] != __JSONX_ASSIGNED_START )
+  if( !__JSONX_ASSIGNED_START.test( str[0] ) )
     return { rest: str }
     
   str = str.substr(1)
   for( let x in str )
-    if( str[x] == __OBJECT_COMMA 
+    if( ( str[x] == __OBJECT_COMMA )
         && !_assigned.includes( __LEFT_BRACE )
         && !_assigned.includes( __LEFT_BRACKET ) )
       return { _assigned, rest: str.substr( _assigned.length ) }
@@ -163,12 +182,15 @@ function isAssigned( str: any ): LexicalCheckRespone {
     else if( str.substr( _assigned.length ).length == 1 )
       return { _assigned, rest: str.substr( _assigned.length ) }
 
-    else _assigned += str[x]
+    else if( str[x] != __RIGHT_BRACE 
+              && str[x] != __RIGHT_BRACKET 
+              && str[x] != __MULTILINE_COMMENT_CLOSER )
+      _assigned += str[x]
     
   throw new Error('Expected End of Assigned to be: COMMA (,) or BRACKET CLOSURE (]) or BRACE CLOSURE (})')
 }
 
-function isScript( str: any ): LexicalCheckRespone {
+export function isScript( str: any ): LexicalCheckRespone {
 
   let _script = ''
   if( str[0] != __JSONX_SCRIPT_GRAVE )
@@ -183,21 +205,19 @@ function isScript( str: any ): LexicalCheckRespone {
   throw new Error('Expected End of String QUOTE: (")')
 }
 
-// console.log( isString('"hello":{}') )
-// console.log( isNumber('12.3e6:{}') )
-// console.log( isBoolean('false:{}') )
-// console.log( isNull('null:{}') )
-// console.log( isVariable('$protocol.:"merline') )
-// console.log( isImport('@https://localhost:3000/user.json?version=1|{firstname,lastname},"merline') )
-// console.log( isAssigned('$account.settings{theme,langugage},"name":"salue"') )
-// console.log( isScript('`function(){ return $protocol.substr(8) }`:"merline') )
-
 export default ( str: string ) => {
 
   const tokens: any = []
   let extract
   
   while( str.length ){
+
+    extract = isMultiLineComment( str )
+    if( extract._comment !== undefined ){
+      // Remove multi-line comments
+      str = extract.rest
+      continue
+    }
 
     extract = isVariable( str )
     if( extract._variable !== undefined ){
@@ -212,8 +232,15 @@ export default ( str: string ) => {
     extract = isAssigned( str )
     if( extract._assigned !== undefined ){
       // Hoist assigned line as metaset and replace it with meta-key
+      let prefix = '--ASSIGNED'
+      
+      if( __JSONX_ASSIGNED_SPREAD.test( extract._assigned ) ){
+        prefix += '_SPREAD'
+        extract._assigned = extract._assigned.replace( __JSONX_ASSIGNED_SPREAD, '')
+      }
+
       ASSIGNED.push( extract._assigned )
-      tokens.push(`--ASSIGNED[${ASSIGNED.length - 1}]--`)
+      tokens.push(`${prefix}[${ASSIGNED.length - 1}]--`)
       
       str = extract.rest
       continue
@@ -224,6 +251,16 @@ export default ( str: string ) => {
       // Hoist import line and replace it with meta-key
       IMPORTS.push( extract._import.replace( __JSONX_IMPORT_SYNTAX, '') )
       tokens.push(`--IMPORT[${IMPORTS.length - 1}]--`)
+
+      str = extract.rest
+      continue
+    }
+
+    extract = isExport( str )
+    if( extract._export !== undefined ){
+      // Hoist export line and replace it with meta-key
+      EXPORTS.push( extract._export.replace( __JSONX_EXPORT_SYNTAX, '') )
+      tokens.push(`--EXPORT[${EXPORTS.length - 1}]--`)
 
       str = extract.rest
       continue
@@ -279,6 +316,6 @@ export default ( str: string ) => {
   
   return { 
     tokens,
-    syntaxTree: { VARIABLES, IMPORTS, ASSIGNED, SCRIPTS }
+    syntaxTree: { VARIABLES, IMPORTS, EXPORTS, ASSIGNED, SCRIPTS }
   }
 }

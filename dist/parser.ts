@@ -14,6 +14,11 @@ import {
   TokenArray
 } from '..'
 
+function isSpread( _token: string ): boolean {
+  // Check whether a token is a spread assigned variable
+  return _token.includes('ASSIGNED_SPREAD')
+}
+
 function parseArray( tokens: TokenArray[] ): ParseArray {
 
   const _array: any[] = []
@@ -34,7 +39,7 @@ function parseArray( tokens: TokenArray[] ): ParseArray {
       return { _array, _tokens: tokens }
     
     else if( _token != __OBJECT_COMMA )
-      throw new Error('Expected comma (,) after object in Array')
+      throw new Error('Expected comma (,) after object in Array: '+ _token )
   }
 
   throw new Error('Expected End of Array Bracket: (])')
@@ -55,13 +60,28 @@ function parseObject( tokens: TokenArray[] ): parseObject {
     if( typeof _token != 'string' || !__JSON_STRING.test( _token ) )
       throw new Error(`Expected STRING key, got: (${_token})`)
     
-    if( tokens.shift() != __OBJECT_COLON )
-      throw new Error('Expected COLON after key in object: (:)')
+    /** NOTE: Spread Object variable assignment 
+     * has exception to the mandatory `key:value` rule 
+     * due to their self declaration and assignment
+     * property in an object: { ...$variable }
+     */
+    if( !isSpread( _token ) && tokens.shift() != __OBJECT_COLON )
+      throw new Error('Expected COLON after key in object: (:): '+ _token )
 
-    const extract = Parser( tokens )
+    let extract
+    if( isSpread( _token ) ){
+      /** Generate `key:value` by giving a dummy (...)
+       * value to spread _token converted to key: 
+       * It's should be identify as `key:value` during 
+       * compilation process.
+       */
+      extract = { _value: '...', _tokens: tokens }
+    }
+    // Normal `key:value` parsing
+    else extract = Parser( tokens )
+
     _object[ _token ] = extract._value // JSONX Key and value
     tokens = extract._tokens
-
     
     _token = tokens.shift()
     if( _token == __RIGHT_BRACE )
@@ -77,7 +97,6 @@ function parseObject( tokens: TokenArray[] ): parseObject {
 function Parser( tokens: TokenArray[] ): { _value: any, _tokens: TokenArray[] } {
 
   const _token = tokens.shift()
-  
   if( _token == __LEFT_BRACKET ){
     const { _array, _tokens } = parseArray( tokens )
     return { _value: _array, _tokens }

@@ -1,0 +1,10 @@
+{
+  "country_name": "Togo",
+  "country_id": "TG",
+  "language": [ "Ewe", "Kabye" ],
+  "address": "Blemame Avenue",
+  "coordinates": {
+    "lat": 5.322,
+    "lng": 2.211
+  }
+}

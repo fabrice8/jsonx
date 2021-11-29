@@ -1,0 +1,90 @@
+{
+  // Define variables
+  $name: "Farmok",
+  // $fakeuser: @import { total, data } from https://fakeapi.it/api/v1/users?_quantity=1&_gender=male,
+  $fakeuser: @import { total, data } from ./fakeapi.json,
+  $account: @import ./user/account.json,
+  
+  "fistName": "Jeanette",
+  "lastName": $name,
+
+  // Assign variable content
+  "email": $fakeuser.data.$0.email,
+  "ip": $fakeuser.data.$0.ip,
+
+  // Fetch data directly from URL
+  // "address": @import https://fakeapi.it/api/v1/addresses?_quantity=1,
+
+  // Assign a sub-data in object format
+  "settings": $account.settings{theme,language},
+
+  "types": [ $account.type, "LEARNER" ],
+  
+  "credentials": {
+    // Use JS spreading syntax
+    "roles": [ ...$account.roles, "USER" ]
+  },
+
+  /* Double quote comment is supported */
+
+  // Run JS code and assign result
+  $authorization: `$account.isConnected ? "yes" : fetch("https://mytheme.net/auth?userid=Io90dUQ32d")`,
+
+  "isConnected": $authorization,
+  
+  // Import data from external server by destructuring to object
+	// $user: @import { name, email, phone, settings.theme.name as theme, account } from https://localhost:3000/user,
+	$user: @import { name, email, phone, settings.theme.name as theme, account } from ./user/index.jsonx,
+	// Import and destructure data to array from a relative directory
+	$superRoles: @import [ firstRole, secondRole ] from ./user/service-roles.json,
+	// Import without destructuring
+	// $location: @import https://ipinfo.com/location?access_token=Ido38hibD97932ij&json=true,
+	$location: @import ./location.json,
+
+	/* Multiple line comment */ 
+	$profile: {
+		"name": $user.name,
+		"contacts": $user{email,phone},
+		"isVerified": true,
+		"bio": "Phd in Biology animal and Physiology",
+		"location-infos": $location
+	},
+
+	"me": {
+		...$profile,
+		"accountType": $user.account.type,
+		"theme": $user.theme
+	},
+	"service": {
+		"activeRole": $superRoles.firstRole, // Assign array item
+		"roles": [ $superRoles.secondRole, "USER" ], // Assign value of $superRoles along with USER
+		"rate": 2.5,
+		"added": $user.account.added[ 0, ...1 ], // Assign data by destructuring to array
+    "lastConnection": $user.account.history[ $0.lastTime ]
+    // "countries": @import ./normal.json
+	},
+
+	// Define alias of a destructed data field
+  /*
+	$credentials: @import { cId, access.key as token } from https://example.com/credentials/9IDow82bu,
+
+	// Export data
+	@export as access: {
+		"id": $credentials.cId,
+		"token": $credentials.token
+	},
+  */
+
+  /* Export in this case will be accessible 
+    on the same as the variable assigned: `authorization`
+    to simplify this syntax: `@export as authorization: $authorization`
+
+    NOTE: The whole object is return as default export
+		      when imported to another JSONX file.
+	*/
+  @export: $authorization,
+
+	$connection: "online",
+	// Can do multiple exports within
+	@export as profile: `$connection !== "online" ? $profile : $user.account || "Unknown"`
+}

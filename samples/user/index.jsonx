@@ -1,0 +1,15 @@
+{ 
+  $user: {
+    "name": "Memphy Pinas", 
+    "email": "memphy@cika.do", 
+    "phone": "(+227)77221222", 
+    "settings": {
+      "theme": { "name": "Wlay" }
+    }
+  },
+
+  @export: {
+    ...$user, 
+    "account": @import ./account.jsonx
+  }
+}

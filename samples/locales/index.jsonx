@@ -1,0 +1,7 @@
+{
+  @use: ( lang = "fr", variant = "FR" ) import { locale } from ./dictionary.jsonx,
+  
+  $dictionary: @import { locales } ./dictionary.jsonx,
+
+  
+}

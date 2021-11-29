@@ -45,19 +45,29 @@ var parser_1 = __importDefault(require("../src/parser"));
 var compiler_1 = __importDefault(require("../src/compiler"));
 var utils_1 = require("../src/utils");
 exports.default = (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var basePath, input, cleaned, _a, tokens, syntaxTree, _value, _b, _c;
-    return __generator(this, function (_d) {
-        switch (_d.label) {
+    var entryPoint, input, cleaned, _a, tokens, syntaxTree, _value, _b, JSON, Exports;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
             case 0:
-                basePath = path_1.default.resolve(__dirname, '../samples');
-                return [4 /*yield*/, (0, utils_1.fetchContent)(basePath + '/s1.jsonx')];
+                entryPoint = path_1.default.resolve(__dirname, '../samples/index.jsonx');
+                return [4 /*yield*/, (0, utils_1.fetchContent)(entryPoint)];
             case 1:
-                input = _d.sent(), cleaned = (0, utils_1.clean)(input), _a = (0, lexer_1.default)(cleaned), tokens = _a.tokens, syntaxTree = _a.syntaxTree;
+                input = _c.sent(), cleaned = (0, utils_1.clean)(input), _a = (0, lexer_1.default)(cleaned), tokens = _a.tokens, syntaxTree = _a.syntaxTree;
+                console.log('\n---------------------------------- CLEANED INPUT ----------------------------------');
+                console.log(cleaned);
+                console.log('\n---------------------------------- TOKENS ----------------------------------');
+                console.log(tokens);
+                console.log('\n---------------------------------- SYNTAX TREE ----------------------------------');
+                console.log(syntaxTree);
+                console.log('\n---------------------------------- PARSED VALUES ----------------------------------');
                 _value = (0, parser_1.default)(tokens)._value;
-                _c = (_b = console).log;
-                return [4 /*yield*/, (0, compiler_1.default)(_value, syntaxTree, basePath)];
+                console.log(_value);
+                console.log('\n---------------------------------- COMPILED JSON DATA ----------------------------------');
+                return [4 /*yield*/, (0, compiler_1.default)(_value, syntaxTree, path_1.default.dirname(entryPoint))];
             case 2:
-                _c.apply(_b, [_d.sent()]);
+                _b = _c.sent(), JSON = _b.JSON, Exports = _b.Exports;
+                console.log('JSON Data: ', JSON);
+                console.log('Exports: ', Exports);
                 return [2 /*return*/];
         }
     });

@@ -1,0 +1,33 @@
+{
+  /* Variables `$lang` and `$variant` are already
+      available as being injected
+  */
+  $refs: @import ./references.json,
+  $translation: @import ./#{$lang}.jsonx,
+
+  /* Generate an object of key:values using
+    $refs and dictionary. Compiler 
+
+  */
+  @map $refs => ( key, value ) as locales : {
+    $value: $dictionary.$key
+  },
+
+  /* Generate an object of key:values using
+    $refs and dictionary. Compiler 
+
+  */
+  @map $refs => ( 0, 40, +1 ) as locales : {
+    $value: $dictionary.$key
+  },
+  
+  /* Generate an object of key:values using
+    $refs and dictionary. Compiler 
+
+  */
+  @map $refs => ( key, value ) as locales : [
+    {
+      $refs.$key: $dictionary.$value
+    }
+  ]
+}

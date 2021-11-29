@@ -1,0 +1,10 @@
+{
+  "type": "SALES",
+  "added": [ 1234545464545, "emilysola@gmax.com" ],
+  "history": [
+    {
+      "online": true,
+      "lastTime": "22/09/1990 12:43"
+    }
+  ]
+}
