@@ -5,7 +5,7 @@ Javascript Object Notation &amp; More
 
 
 
-```jsonx
+```js
 {
   // define variables
   $name: "Farmok",
